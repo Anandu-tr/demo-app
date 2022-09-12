@@ -20,13 +20,20 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        viewModel.getData()
+        if (savedInstanceState?.getBoolean("isDataFetched") != true) {
+            viewModel.getData()
+        }
         setObserver()
         binding.refresh.setOnRefreshListener { viewModel.getData() }
         binding.btRetry.setOnClickListener {
             binding.groupError.isVisible = false
             viewModel.getData()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean("isDataFetched", true)
+        super.onSaveInstanceState(outState)
     }
 
     private fun setObserver() {
