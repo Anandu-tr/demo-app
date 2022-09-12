@@ -22,16 +22,24 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         viewModel.getData()
         setObserver()
+        binding.refresh.setOnRefreshListener { viewModel.getData() }
+        binding.btRetry.setOnClickListener {
+            binding.groupError.isVisible = false
+            viewModel.getData()
+        }
     }
 
     private fun setObserver() {
         viewModel.demoData.observe(this){
             when(it.status){
                 Status.LOADING -> {
-                    binding.progressBar.isVisible = true
+                    if (!binding.groupSuccess.isVisible)
+                        binding.progressBar.isVisible = true
+                    else
+                        binding.refresh.isRefreshing = true
                 }
                 Status.SUCCESS -> it.data?.let { data ->
-                    binding.progressBar.isVisible = false
+                    hideLoader()
                     binding.groupSuccess.isVisible = true
                     binding.toolbar.title = data.title
                     val rows = data.rows.filter { row-> !row.title?.trim().isNullOrBlank() }
@@ -40,9 +48,16 @@ class MainActivity : AppCompatActivity() {
                     binding.rvData.addItemDecoration(divider)
                 }
                 Status.ERROR -> {
-
+                    hideLoader()
+                    binding.groupSuccess.isVisible = false
+                    binding.groupError.isVisible = true
                 }
             }
         }
+    }
+
+    private fun hideLoader(){
+        binding.progressBar.isVisible = false
+        binding.refresh.isRefreshing = false
     }
 }
